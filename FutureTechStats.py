@@ -4,11 +4,15 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.ticker import FuncFormatter
 
-# ── Conexión ──────────────────────────────────────────────────────────────────
+#
+# EL USO DE LA IA ESTA INDICADO EN CADA PARTE, PERO SE PUEDE RESUMIR EN QUE TODO LO QUE ES LA LIBRERIA MATPLOTLIB ESTA HECHO CON IA
+#
+
+#Conexion
 conexion = pymysql.connect(
     host="nas.latorreg.es",
-    user="root",
-    passwd="7365",
+    user="aaron",
+    passwd="1234",
     database="futuretech_db"
 )
 
@@ -20,7 +24,7 @@ df_indicadores = pd.read_sql("SELECT * FROM Indicadores_Sostenibilidad", conexio
 
 conexion.close()
 
-# ── Estilo dark mode ──────────────────────────────────────────────────────────
+# Colores para los graficos (IA)
 plt.style.use("dark_background")
 mpl.rcParams.update({
     "figure.facecolor": "#0e1117",
@@ -47,38 +51,35 @@ PALETA_AZUL  = ["#4fc3f7", "#0288d1", "#01579b", "#b3e5fc", "#e1f5fe"]
 PALETA_CORAL = ["#ef9a9a", "#e53935", "#b71c1c", "#ffcdd2", "#ffebee"]
 PALETA_VERDE = ["#a5d6a7", "#388e3c", "#1b5e20", "#c8e6c9", "#e8f5e9"]
 
-# ── Números sin notación científica ───────────────────────────────────────────
+# Quitar la notacion cientifica (sacado de google)
 def fmt_numero(x, _):
     return f"{x:,.0f}".replace(",", ".")
 
 formatter = FuncFormatter(fmt_numero)
 pd.options.display.float_format = lambda x: f"{x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-# ── Guardar figura ────────────────────────────────────────────────────────────
 def guardar(nombre):
     plt.savefig(f"{nombre}.png", dpi=300, bbox_inches="tight",
                 facecolor=mpl.rcParams["figure.facecolor"])
 
-# ── Preparación ───────────────────────────────────────────────────────────────
+# Pasamos las fechas de string a datetime para que no haya errorres
 df_consumo["fecha"] = pd.to_datetime(df_consumo["fecha"], errors="coerce")
 df_costes["fecha"]  = pd.to_datetime(df_costes["fecha"],  errors="coerce")
-df_consumo = df_consumo.dropna(subset=["fecha"])
-df_costes  = df_costes.dropna(subset=["fecha"])
+
+# Hacemos columna año
 df_consumo["anio"] = df_consumo["fecha"].dt.year
 df_costes["anio"]  = df_costes["fecha"].dt.year
 
+#Tablas resumen
 sect_cent  = df_sectores[["id_sector", "id_centro", "nombre"]].rename(columns={"nombre": "sector"})
 centros_nm = df_centros[["id_centro", "nombre"]].rename(columns={"nombre": "centro"})
 
+#Joins
 df_consumo     = df_consumo.merge(sect_cent, on="id_sector", how="left").merge(centros_nm, on="id_centro", how="left")
 df_costes      = df_costes.merge(sect_cent,  on="id_sector", how="left").merge(centros_nm, on="id_centro", how="left")
 df_indicadores = df_indicadores.merge(centros_nm, on="id_centro", how="left")
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 1. CONSUMO ENERGÉTICO
-# ══════════════════════════════════════════════════════════════════════════════
-
+#Consumo Energetico
 consumo_anual      = df_consumo.groupby("anio")["kwh_consumidos"].sum()
 consumo_por_centro = df_consumo.groupby("centro")["kwh_consumidos"].sum().sort_values(ascending=False)
 consumo_por_fuente = df_consumo.groupby("fuente_energia")["kwh_consumidos"].sum()
@@ -89,6 +90,7 @@ print("\nkWh por año:\n",    consumo_anual)
 print("\nkWh por centro:\n", consumo_por_centro)
 print("\nkWh por fuente:\n", consumo_por_fuente)
 
+#Parte echa con IA para sacar los graficos
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))
 fig.suptitle("Consumo Energético", fontsize=15, fontweight="bold", y=1.02)
 fig.patch.set_facecolor(mpl.rcParams["figure.facecolor"])
@@ -126,11 +128,7 @@ plt.tight_layout()
 guardar("consumo_energetico")
 plt.show()
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 2. COSTES OPERATIVOS
-# ══════════════════════════════════════════════════════════════════════════════
-
+#Costes Operativos
 coste_anual      = df_costes.groupby("anio")["coste_total"].sum()
 coste_por_centro = df_costes.groupby("centro")["coste_total"].sum().sort_values(ascending=False)
 desglose         = df_costes[["coste_energia", "coste_mantenimiento", "coste_personal"]].mean()
@@ -141,6 +139,7 @@ print("\nCoste total por año:\n",  coste_anual)
 print("\nMedia por categoría:\n",  desglose)
 print("\nCoste total por centro:\n", coste_por_centro)
 
+#Parte echa con IA para sacar los graficos
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))
 fig.suptitle("Costes Operativos", fontsize=15, fontweight="bold", y=1.02)
 fig.patch.set_facecolor(mpl.rcParams["figure.facecolor"])
@@ -178,11 +177,7 @@ plt.tight_layout()
 guardar("costes_operativos")
 plt.show()
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 3. SOSTENIBILIDAD
-# ══════════════════════════════════════════════════════════════════════════════
-
+#Sostenibilidad
 huella_anual     = df_indicadores.groupby("anio")["huella_carbono"].mean()
 ultimo_anio      = df_indicadores["anio"].max()
 renovable_ultimo = df_indicadores[df_indicadores["anio"] == ultimo_anio].set_index("centro")["porcentaje_renovable"]
@@ -194,6 +189,7 @@ print("\nHuella de carbono media por año:\n", huella_anual)
 print(f"\n% Renovable por centro ({ultimo_anio}):\n", renovable_ultimo)
 print("\nPuntuación global (pivot):\n", pivot_puntuacion)
 
+#Parte echa con IA para sacar los graficos
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))
 fig.suptitle("Sostenibilidad", fontsize=15, fontweight="bold", y=1.02)
 fig.patch.set_facecolor(mpl.rcParams["figure.facecolor"])
