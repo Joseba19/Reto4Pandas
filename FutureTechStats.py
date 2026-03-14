@@ -79,7 +79,7 @@ df_consumo     = df_consumo.merge(sect_cent, on="id_sector", how="left").merge(c
 df_costes      = df_costes.merge(sect_cent,  on="id_sector", how="left").merge(centros_nm, on="id_centro", how="left")
 df_indicadores = df_indicadores.merge(centros_nm, on="id_centro", how="left")
 
-#Consumo Energetico
+#Consumo Energetico (Xabi)
 consumo_anual      = df_consumo.groupby("anio")["kwh_consumidos"].sum()
 consumo_por_centro = df_consumo.groupby("centro")["kwh_consumidos"].sum().sort_values(ascending=False)
 consumo_por_fuente = df_consumo.groupby("fuente_energia")["kwh_consumidos"].sum()
@@ -128,7 +128,7 @@ plt.tight_layout()
 guardar("consumo_energetico")
 plt.show()
 
-#Costes Operativos
+#Costes Operativos (Filip)
 coste_anual      = df_costes.groupby("anio")["coste_total"].sum()
 coste_por_centro = df_costes.groupby("centro")["coste_total"].sum().sort_values(ascending=False)
 desglose         = df_costes[["coste_energia", "coste_mantenimiento", "coste_personal"]].mean()
@@ -177,7 +177,7 @@ plt.tight_layout()
 guardar("costes_operativos")
 plt.show()
 
-#Sostenibilidad
+#Sostenibilidad (Aaron)
 huella_anual     = df_indicadores.groupby("anio")["huella_carbono"].mean()
 ultimo_anio      = df_indicadores["anio"].max()
 renovable_ultimo = df_indicadores[df_indicadores["anio"] == ultimo_anio].set_index("centro")["porcentaje_renovable"]
