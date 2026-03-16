@@ -22,23 +22,6 @@ pip install pymysql pandas matplotlib
 
 ---
 
-## Configuración
-
-### Conexión a la base de datos
-
-Al inicio del script se definen los parámetros de conexión:
-
-```python
-host     = "nas.latorreg.es"
-user     = "aaron"
-passwd   = "1234"
-database = "futuretech_db"
-```
-
-> ⚠️ No almacenar credenciales en texto plano en producción. Considerar el uso de variables de entorno o un archivo `.env`.
-
----
-
 ## Estructura de la base de datos
 
 El script espera las siguientes tablas:
