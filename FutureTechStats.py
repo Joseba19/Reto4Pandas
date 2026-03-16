@@ -10,7 +10,7 @@ from matplotlib.ticker import FuncFormatter
 
 #Conexion
 conexion = pymysql.connect(
-    host="nas.latorreg.es",
+    host="localhost",
     user="aaron",
     passwd="1234",
     database="futuretech_db"
